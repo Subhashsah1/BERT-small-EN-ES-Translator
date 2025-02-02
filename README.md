@@ -9,7 +9,7 @@
 This project implements an advanced neural machine translation system using BERT (Bidirectional Encoder Representations from Transformers) for English to Spanish translation. The model leverages a sophisticated encoder-decoder architecture with BERT-small as both the encoder and decoder components, demonstrating the powerful adaptation of BERT for sequence-to-sequence tasks.
 
 <p align="center">
-  <img src="/api/placeholder/800/400" alt="BERT Translation Architecture">
+  <img src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fnt9g5x8sfvptbnu3wb1t.jpg" alt="BERT Translation Architecture">
 </p>
 
 ## ✨ Key Features
