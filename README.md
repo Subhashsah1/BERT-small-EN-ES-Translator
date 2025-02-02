@@ -1,105 +1,159 @@
-# Neural Machine Translation with Attention 🚀
+# 🤖 BERT-based English-Spanish Translation Model
 
-A PyTorch implementation of a Sequence-to-Sequence model with Attention for English-Spanish translation.
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/downloads/)
+[![HuggingFace](https://img.shields.io/badge/🤗-HuggingFace-yellow.svg)](https://huggingface.co/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/)
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+## 📋 Project Overview
+This project implements an advanced neural machine translation system using BERT (Bidirectional Encoder Representations from Transformers) for English to Spanish translation. The model leverages a sophisticated encoder-decoder architecture with BERT-small as both the encoder and decoder components, demonstrating the powerful adaptation of BERT for sequence-to-sequence tasks.
 
-## 🌟 Features
+<p align="center">
+  <img src="/api/placeholder/800/400" alt="BERT Translation Architecture">
+</p>
 
-- **Bidirectional GRU Encoder**: Captures context from both directions of the input sequence
-- **Attention Mechanism**: Helps the model focus on relevant parts of the input sequence
-- **Teacher Forcing**: Implements curriculum learning for better training stability
-- **Dynamic Batching**: Efficient training with variable sequence lengths
-- **Hugging Face Integration**: Uses MarianTokenizer for robust text processing
+## ✨ Key Features
+- 🔄 Implements an encoder-decoder architecture using BERT-small
+- 🌐 Handles translation between English and Spanish
+- 🤗 Uses the Hugging Face Transformers library
+- 🔍 Includes data preprocessing and tokenization
+- 🔦 Implements beam search for better translation quality
+- ⚡ Supports batched inference for efficient processing
 
-## 🏗️ Architecture
+## 🛠️ Technical Details
 
-The model consists of three main components:
+### Model Architecture
+- **Encoder**: `prajjwal1/bert-small`
+- **Decoder**: BERT-small with cross-attention layers
+- **Tokenizer**: BertTokenizer
+- **Max Sequence Length**: 128 tokens
 
-1. **Encoder**: Bidirectional GRU network that processes input sequences
-2. **Attention**: Computes attention weights for each encoder state
-3. **Decoder**: GRU network that generates translations using attention context
+### Training Parameters
+| Parameter | Value |
+|-----------|-------|
+| Batch Size | 8 |
+| Learning Rate | 5e-5 |
+| Weight Decay | 0.01 |
+| Epochs | 1 |
 
-```plaintext
-Input → Encoder → Attention → Decoder → Translation
-      ↑          ↑          ↑
-      Embeddings Context    Attention Weights
-```
+### Dataset
+The model is trained on the `loresiensis/corpus-en-es` dataset from Hugging Face:
+- 📚 Training set: 9,439 sentence pairs
+- 🧪 Test set: 1,049 sentence pairs
 
-## 🚀 Quick Start
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/nmt-attention.git
-cd nmt-attention
-```
-
-2. Install dependencies:
+## 📦 Requirements
 ```bash
 pip install torch transformers datasets
 ```
 
-3. Train the model:
+## 💻 Usage
+
+### Training the Model
 ```python
-python train.py
+from transformers import (
+    BertTokenizer,
+    EncoderDecoderModel,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForSeq2Seq,
+)
+
+# Load tokenizer and model
+tokenizer = BertTokenizer.from_pretrained("prajjwal1/bert-small")
+model = EncoderDecoderModel.from_encoder_decoder_pretrained(
+    "prajjwal1/bert-small", 
+    "prajjwal1/bert-small"
+)
+
+# Configure training arguments
+training_args = TrainingArguments(
+    output_dir="./bert-small-translation_folder",
+    num_train_epochs=1,
+    per_device_train_batch_size=8,
+    learning_rate=5e-5,
+    weight_decay=0.01
+)
+
+# Train the model
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["test"],
+    data_collator=data_collator,
+)
+trainer.train()
 ```
 
-4. Translate text:
+### Translation Example
 ```python
-from translate import translate
-text = "How are you?"
-translated = translate(model, text, tokenizer)
-print(translated)
-
-# Loading a saved model
-model = Seq2Seq(encoder, decoder, device)
-model.load_state_dict(torch.load('LSTM_text_generator.pth'))
-model.eval()
+def translate(text, max_length=128, num_beams=5):
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        padding="max_length",
+        truncation=True,
+        max_length=max_length,
+    )
+    
+    generated_ids = model.generate(
+        input_ids=inputs.input_ids,
+        attention_mask=inputs.attention_mask,
+        decoder_start_token_id=tokenizer.cls_token_id,
+        max_length=max_length,
+        num_beams=num_beams,
+        early_stopping=True,
+    )
+    
+    return tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 ```
 
 ## 📊 Model Performance
+The model achieves the following metrics after training:
+- 📉 Training Loss: 4.04
+- 📈 Validation Loss: 3.67
 
-Training metrics after 10 epochs:
-- Initial Loss: 11.147
-- Final Loss: 3.527
-- Training Time: ~2 hours on NVIDIA V100
+## 🚀 Future Improvements
+- 🔄 Increase training epochs for better convergence
+- 📈 Experiment with larger BERT models
+- 🔍 Implement better text preprocessing
+- 📊 Add data augmentation techniques
+- ⚡ Implement more sophisticated beam search parameters
+- 📝 Add evaluation metrics (BLEU, ROUGE)
 
-## 🔧 Hyperparameters
+## 📄 License
 
-```python
-BATCH_SIZE = 32
-LEARNING_RATE = 1e-3
-CLIP = 1.0
-N_EPOCHS = 10
-ENC_EMB_DIM = 256
-DEC_EMB_DIM = 256
-ENC_HID_DIM = 512
-DEC_HID_DIM = 512
-```
+MIT License
 
-## 📚 Dataset
+Copyright (c) 2025 [Your Name]
 
-Using the `loresiensis/corpus-en-es` dataset from Hugging Face Hub, which provides English-Spanish sentence pairs for training.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-## 🤝 Contributing
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## 🙏 Acknowledgments
+- 🤗 Hugging Face Transformers library
+- 🔥 BERT-small model by prajjwal1
+- 📚 loresiensis for the English-Spanish corpus
 
-- [Attention Is All You Need](https://arxiv.org/abs/1706.03762) paper
-- Hugging Face for the transformers library and datasets
-- PyTorch team for the amazing deep learning framework
+## 📫 Contact
+[Add your contact information here]
 
 ---
-⭐️ If you found this project helpful, please consider giving it a star!
+<p align="center">
+Made with ❤️ using PyTorch and Hugging Face
+</p>
